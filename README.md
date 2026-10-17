@@ -32,13 +32,25 @@ One painting from each of the 25 painters. The images used to make this figure l
 
 The class index is the folder number. It is also the alphabetical order of the filename prefix (`Vincent_van_Gogh_12.jpg` belongs to class 24).
 
-## Setup
+## Project layout
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+```text
+config/
+  train.yaml          training hyperparameters
+  infer.yaml          checkpoint used for prediction
+src/
+  train.py            fine-tune ResNet-152
+  predict.py          classify every image in a folder
+  data.py
+  model.py
+app/                  FastAPI service
+experiments/          notebooks
+presentation/         README figures
+models/               checkpoints, not committed
+data/                 numbered class folders, not committed
 ```
+
+## Setup
 
 Put the trained file at:
 
@@ -46,7 +58,52 @@ Put the trained file at:
 models/resnet152_progressive.pth
 ```
 
-The API refuses to start if that file is missing. Override the path with `MODEL_PATH` if the checkpoint lives somewhere else.
+The API refuses to start if that file is missing. Override the path with `MODEL_PATH` if the checkpoint lives somewhere else. The folder command reads `config/infer.yaml`.
+
+### pip and venv
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### conda
+
+```bash
+conda env create -f environment.yml
+conda activate paintings
+```
+
+`environment.yml` installs Python 3.11 and the scientific packages from conda-forge, then installs PyTorch, torchvision, and FastAPI with pip.
+
+### uv
+
+```bash
+uv sync
+source .venv/bin/activate
+```
+
+`pyproject.toml` is the uv project file. `uv sync` creates `.venv` and installs the same libraries.
+
+## Train
+
+Edit `config/train.yaml`, then from the repository root:
+
+```bash
+python -m src.train
+```
+
+This builds a stratified 80/20 split, applies the geometric augmentation, and fine-tunes every ResNet-152 parameter. The best validation-accuracy weights are written to the `output` path in that config. The default output is `models/resnet152_finetuned.pth`, so it does not overwrite `models/resnet152_progressive.pth`.
+
+## Predict a folder
+
+```bash
+python -m src.predict test_data
+python -m src.predict test_data --output predictions.csv
+```
+
+The command walks the folder, including nested directories, and prints `file`, `artist`, and `confidence` for each image. `--checkpoint` overrides `config/infer.yaml`.
 
 ## Run the API
 

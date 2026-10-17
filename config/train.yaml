@@ -1,0 +1,13 @@
+data_dir: data
+pretrained: true
+checkpoint: null
+output: models/resnet152_finetuned.pth
+batch_size: 32
+epochs: 50
+learning_rate: 0.001
+lr_patience: 7
+lr_factor: 0.1
+early_stop_patience: 14
+val_fraction: 0.2
+seed: 42
+num_workers: 0

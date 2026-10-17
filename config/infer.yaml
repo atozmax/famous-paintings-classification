@@ -1,0 +1,2 @@
+checkpoint: models/resnet152_progressive.pth
+batch_size: 32
